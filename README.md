@@ -10,7 +10,7 @@ The input are 64 x 64 greyscale images
 
 | Layer Type | Parameters |
 | -----------|----------- |
-| Input      | size: 64x64, channel: 3 |
+| Input      | size: 64x64, channel: 1 |
 | convolution| kernel: 3x3, channel: 128 |
 | ReLU |  |
 | convolution| kernel: 3x3, channel: 128 |
