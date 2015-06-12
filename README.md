@@ -8,6 +8,27 @@ The input are 64 x 64 greyscale images
 4 convolution layers with filter size 3x3 and ReLU activations. Max pooling layers after every other convolution layer.
 2 hidden layers with dropout and PReLU. Softmax output.
 
+| Layer Type | Parameters |
+| -----------|----------- |
+| Input      | size: 64x64, channel: 3 |
+| convolution| kernel: 3x3, channel: 128 |
+| ReLU |  |
+| convolution| kernel: 3x3, channel: 128 |
+| ReLU | |
+| max pool | kernel: 2x2 |
+| convolution| kernel: 3x3, channel: 256 |
+| ReLU |  |
+| convolution| kernel: 3x3, channel: 256 |
+| ReLU |  |
+| max pool | kernel: 2x2 |
+| fully connected | units: 2048 |
+| ReLU |  |
+| dropout | 0.5 |
+| fully connected | units: 2048 |
+| ReLU |  |
+| dropout | 0.5 |
+| softmax | units: 62 |
+
 ### Data augmentation
 
 Images are randomly transformed 'on the fly' while they are being prepared in each batch. The CPU will prepare each batch while the GPU will run the previous batch through the network. 
