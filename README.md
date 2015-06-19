@@ -6,7 +6,7 @@ VGG style convolution neural network for the case sensitive character recognitio
 
 The input are 64 x 64 greyscale images
 4 convolution layers with filter size 3x3 and ReLU activations. Max pooling layers after every other convolution layer.
-2 hidden layers with dropout and PReLU. Softmax output.
+2 hidden layers with dropout. Softmax output.
 
 | Layer Type | Parameters |
 | -----------|----------- |
@@ -38,7 +38,7 @@ Images are randomly transformed 'on the fly' while they are being prepared in ea
 * Random zoom between factors of 1 and 1.3. 
 * Random shearing between -25 and 25 degrees.
 * Bool choice to invert colors.
-* Bool choice to apply sobel edge detector.
+* Sobel edge detector applied to 1/3 of images.
 
 ![Imgur](http://i.imgur.com/vNkJrKi.png)![Imgur](http://i.imgur.com/0G8Khxv.gif)
 
