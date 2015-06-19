@@ -38,7 +38,7 @@ Random translation between -10 and 10 pixels in any direction.
 Random zoom between factors of 1 and 1.3. 
 Random shearing between -25 and 25 degrees.
 
-![Imgur](http://i.imgur.com/vNkJrKi.png)![Imgur](http://i.imgur.com/0G8Khxv.gifv)
+![Imgur](http://i.imgur.com/vNkJrKi.png)![Imgur](http://i.imgur.com/0G8Khxv.gif)
 
 ### To-do
 
