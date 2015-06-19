@@ -37,6 +37,8 @@ Random rotations between -10 and 10 degrees.
 Random translation between -10 and 10 pixels in any direction. 
 Random zoom between factors of 1 and 1.3. 
 Random shearing between -25 and 25 degrees.
+Bool choice to invert colors.
+Bool choice to apply sobel edge detector.
 
 ![Imgur](http://i.imgur.com/vNkJrKi.png)![Imgur](http://i.imgur.com/0G8Khxv.gif)
 
