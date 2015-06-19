@@ -38,7 +38,7 @@ Images are randomly transformed 'on the fly' while they are being prepared in ea
 * Random zoom between factors of 1 and 1.3. 
 * Random shearing between -25 and 25 degrees.
 * Bool choice to invert colors.
-* Sobel edge detector applied to 1/3 of images.
+* Sobel edge detector applied to 1/4 of images.
 
 ![Imgur](http://i.imgur.com/vNkJrKi.png)![Imgur](http://i.imgur.com/0G8Khxv.gif)
 
