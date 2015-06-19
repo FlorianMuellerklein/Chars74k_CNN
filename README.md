@@ -38,6 +38,8 @@ Random translation between -10 and 10 pixels in any direction.
 Random zoom between factors of 1 and 1.3. 
 Random shearing between -25 and 25 degrees.
 
+[Imgur](http://i.imgur.com/vNkJrKi.png)[Imgur](http://i.imgur.com/0G8Khxv.gifv)
+
 ### To-do
 
 Stream data from SSD instead of holding all images in memory (need to install SSD first).
