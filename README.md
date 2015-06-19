@@ -33,12 +33,12 @@ The input are 64 x 64 greyscale images
 
 Images are randomly transformed 'on the fly' while they are being prepared in each batch. The CPU will prepare each batch while the GPU will run the previous batch through the network. 
 
-Random rotations between -10 and 10 degrees.
-Random translation between -10 and 10 pixels in any direction. 
-Random zoom between factors of 1 and 1.3. 
-Random shearing between -25 and 25 degrees.
-Bool choice to invert colors.
-Bool choice to apply sobel edge detector.
+* Random rotations between -10 and 10 degrees.
+* Random translation between -10 and 10 pixels in any direction. 
+* Random zoom between factors of 1 and 1.3. 
+* Random shearing between -25 and 25 degrees.
+* Bool choice to invert colors.
+* Bool choice to apply sobel edge detector.
 
 ![Imgur](http://i.imgur.com/vNkJrKi.png)![Imgur](http://i.imgur.com/0G8Khxv.gif)
 
