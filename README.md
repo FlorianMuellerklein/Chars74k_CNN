@@ -21,6 +21,11 @@ The input are 64 x 64 greyscale images
 | convolution| kernel: 3x3, channel: 256 |
 | ReLU |  |
 | max pool | kernel: 2x2 |
+| convolution| kernel: 3x3, channel: 512 |
+| ReLU |  |
+| convolution| kernel: 3x3, channel: 512 |
+| ReLU |  |
+| max pool | kernel: 2x2 |
 | fully connected | units: 2048 |
 | ReLU |  |
 | dropout | 0.5 |
@@ -31,11 +36,11 @@ The input are 64 x 64 greyscale images
 
 ### Data augmentation
 
-Images are randomly transformed 'on the fly' while they are being prepared in each batch. The CPU will prepare each batch while the GPU will run the previous batch through the network. 
+Images are randomly transformed 'on the fly' while they are being prepared in each batch. The CPU will prepare each batch while the GPU will run the previous batch through the network.
 
 * Random rotations between -10 and 10 degrees.
-* Random translation between -10 and 10 pixels in any direction. 
-* Random zoom between factors of 1 and 1.3. 
+* Random translation between -10 and 10 pixels in any direction.
+* Random zoom between factors of 1 and 1.3.
 * Random shearing between -25 and 25 degrees.
 * Bool choice to invert colors.
 * Sobel edge detector applied to 1/4 of images.
@@ -45,7 +50,7 @@ Images are randomly transformed 'on the fly' while they are being prepared in ea
 ### To-do
 
 Stream data from SSD instead of holding all images in memory (need to install SSD first).
-Try different network archetectures and data pre-processing.
+Try different network architectures and data pre-processing.
 
 ### References
 

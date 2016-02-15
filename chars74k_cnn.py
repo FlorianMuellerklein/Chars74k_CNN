@@ -34,9 +34,9 @@ def batch_iterator(data, y, batchsize, model):
     '''
     Data augmentation batch iterator for feeding images into CNN.
     This example will randomly rotate all images in a given batch between -10 and 10 degrees
-    and to random translations between -5 and 5 pixels in all directions.
+    and to random translations between -10 and 10 pixels in all directions.
     Random zooms between 1 and 1.3.
-    Random shearing between -20 and 20 degrees.
+    Random shearing between -10 and 10 degrees.
     Randomly applies sobel edge detector to 1/4th of the images in each batch.
     Randomly inverts 1/2 of the images in each batch.
     '''
@@ -51,7 +51,7 @@ def batch_iterator(data, y, batchsize, model):
         # set empty copy to hold augmented images so that we don't overwrite
         X_batch_aug = np.empty(shape = (X_batch.shape[0], 1, PIXELS, PIXELS), dtype = 'float32')
 
-        # random rotations betweein -8 and 8 degrees
+        # random rotations betweein -10 and 10 degrees
         dorotate = randint(-10,10)
 
         # random translations
@@ -192,8 +192,8 @@ def build_model():
 def main():
 
     # switch the commented lines here to alternate between CV testing and making kaggle submission
-    #x_train, x_test, y_train, y_test = load_data_cv('data/train_32.npy')
-    x_train, y_train, x_test = load_data_test('data/train_32.npy', 'data/test_32.npy')
+    x_train, x_test, y_train, y_test = load_data_cv('data/train_32.npy')
+    #x_train, y_train, x_test = load_data_test('data/train_32.npy', 'data/test_32.npy')
 
     model = build_model()
 
@@ -211,42 +211,43 @@ def main():
             start = time.time()
             loss = batch_iterator(x_train, y_train, BATCHSIZE, model)
             train_loss.append(loss)
-            #valid_avg = model.evaluate(x_test, y_test, show_accuracy = True, verbose = 0)
-            #valid_loss.append(valid_avg[0])
-            #valid_acc.append(valid_avg[1])
+            valid_avg = model.evaluate(x_test, y_test, show_accuracy = True, verbose = 0)
+            valid_loss.append(valid_avg[0])
+            valid_acc.append(valid_avg[1])
             end = time.time() - start
             print 'iter:', i, '| Tloss:', np.round(loss, decimals = 3)#, '| Vloss:', np.round(valid_avg[0], decimals = 3), '| Vacc:', np.round(valid_avg[1], decimals = 3), '| time:', np.round(end, decimals = 1)
     except KeyboardInterrupt:
         pass
 
-    #train_loss = np.array(train_loss)
-    #valid_loss = np.array(valid_loss)
-    #valid_acc = np.array(valid_acc)
-    #sns.set_style("whitegrid")
-    #pyplot.plot(train_loss, linewidth = 3, label = 'train loss')
-    #pyplot.plot(valid_loss, linewidth = 3, label = 'valid loss')
-    #pyplot.legend(loc = 2)
-    #pyplot.ylim([0,4.5])
-    #pyplot.twinx()
-    #pyplot.plot(valid_acc, linewidth = 3, label = 'valid accuracy', color = 'r')
-    #pyplot.grid()
-    #pyplot.ylim([0,1])
-    #pyplot.legend(loc = 1)
-    #pyplot.savefig('data/training_plot.png')
+    train_loss = np.array(train_loss)
+    valid_loss = np.array(valid_loss)
+    valid_acc = np.array(valid_acc)
+    sns.set_style("whitegrid")
+    pyplot.plot(train_loss, linewidth = 3, label = 'train loss')
+    pyplot.plot(valid_loss, linewidth = 3, label = 'valid loss')
+    pyplot.legend(loc = 2)
+    pyplot.ylim([0,4.5])
+    pyplot.twinx()
+    pyplot.plot(valid_acc, linewidth = 3, label = 'valid accuracy', color = 'r')
+    pyplot.grid()
+    pyplot.ylim([0,1])
+    pyplot.legend(loc = 1)
+    pyplot.savefig('data/training_plot.png')
     #pyplot.show()
 
 
-    print("Generating predections")
-    preds = model.predict(x_test, verbose=0)
-    np.save('data/preds3.npy', preds)
-    preds_orig = np.load('data/preds1.npy')
-    preds_two = np.load('data/preds2.npy')
-    preds_avg = (preds + preds_orig + preds_two) / 3.0
-    preds = label_enc.inverse_transform(preds_avg, threshold=0.5).astype(str)
+    #print("Generating predections")
+    #preds = model.predict(x_test, verbose=0)
+    #np.save('data/preds4.npy', preds)
+    #preds_orig = np.load('data/preds1.npy')
+    #preds_two = np.load('data/preds2.npy')
+    #preds_three = np.load('data/preds3.npy')
+    #preds_avg = (preds + preds_orig + preds_two + preds_three) / 4.0
+    #preds = label_enc.inverse_transform(preds_avg, threshold=0.5).astype(str)
 
-    submission = pd.read_csv('data/sampleSubmission.csv', dtype = str)
-    submission['Class'] = preds
-    submission.to_csv('preds/chars_74k_avg_preds.csv', index = False)
+    #submission = pd.read_csv('data/sampleSubmission.csv', dtype = str)
+    #submission['Class'] = preds
+    #submission.to_csv('preds/chars_74k_avg_preds.csv', index = False)
 
 if __name__ == '__main__':
     main()
