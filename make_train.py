@@ -42,7 +42,6 @@ def load_images(path):
         print n.split('.')[0]
 
         image = imread(os.path.join(path, n), as_grey = True)
-        #image = sobel(image)
 
         train_image[i, 0:num_features] = np.reshape(image, (1, num_features))
 

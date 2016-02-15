@@ -1,3 +1,4 @@
+import time
 import numpy as np
 import pandas as pd
 
@@ -22,7 +23,9 @@ from skimage import transform, filters, exposure
 PIXELS = 64
 imageSize = PIXELS * PIXELS
 num_features = imageSize
-label_enc = LabelEncoder()
+label_enc = LabelBinarizer()
+
+BATCHSIZE = 128
 
 def fast_warp(img, tf, output_shape, mode='nearest'):
     return transform._warps_cy._warp_fast(img, tf.params, output_shape=output_shape, mode=mode)
@@ -94,13 +97,13 @@ def batch_iterator(data, y, batchsize, model):
             X_batch_aug[l][0] = np.absolute(img - np.amax(img))
 
         # fit model on each batch
-        loss.append(model.train(X_batch_aug, y_batch))
+        loss.append(model.train_on_batch(X_batch_aug, y_batch))
 
     return np.mean(loss)
 
 def load_data_cv(train_path):
 
-    print('read data')
+    print('Read data')
     # reading training data
     training = np.load(train_path)
 
@@ -108,14 +111,15 @@ def load_data_cv(train_path):
     training_targets = training[:,num_features]
     training_targets = label_enc.fit_transform(training_targets)
     training_targets = training_targets.astype('int32')
-    training_targets = np_utils.to_categorical(training_targets)
 
     # split training inputs and scale data 0 to 1
     training_inputs = training[:,0:num_features].astype('float32')
-    training_inputs = training_inputs / np.amax(training_inputs)
+    #training_inputs = training_inputs / np.amax(training_inputs)
 
     # train test split
     x_train, x_test, y_train, y_test = train_test_split(training_inputs, training_targets)
+
+    print 'train size:', x_train.shape[0], 'eval size:', x_test.shape[0]
 
     # reshaping training and testing data so it can be feed to convolutional layers
     x_train = x_train.reshape(x_train.shape[0], 1, PIXELS, PIXELS)
@@ -125,7 +129,7 @@ def load_data_cv(train_path):
 
 def load_data_test(train_path, test_path):
 
-    print('read data')
+    print('Read data')
     # reading training data
     training = np.load(train_path)
 
@@ -133,11 +137,10 @@ def load_data_test(train_path, test_path):
     training_targets = training[:,num_features]
     training_targets = label_enc.fit_transform(training_targets)
     training_targets = training_targets.astype('int32')
-    training_targets = np_utils.to_categorical(training_targets)
 
     # split training inputs and scale data 0 to 1
     training_inputs = training[:,0:num_features].astype('float32')
-    training_inputs = training_inputs / np.amax(training_inputs)
+    #training_inputs = training_inputs / np.amax(training_inputs)
 
     # read testing data
     testing_inputs = np.load(test_path).astype('float32')
@@ -152,31 +155,33 @@ def build_model():
     '''
     VGG style CNN. Using either PReLU or LeakyReLU in the fully connected layers
     '''
-    print('creating the model')
+    print('Creating the model')
     model = Sequential()
 
-    model.add(Convolution2D(128,1,3,3, init='glorot_uniform', activation = 'relu', border_mode='full'))
-    model.add(Convolution2D(128,128, 3,3, init='glorot_uniform', activation = 'relu'))
-    model.add(MaxPooling2D(poolsize=(2,2)))
+    model.add(Convolution2D(128,3,3, input_shape=(1, PIXELS, PIXELS), activation = 'relu'))
+    model.add(Convolution2D(128,3,3, activation = 'relu'))
+    model.add(MaxPooling2D(pool_size=(2,2)))
 
-    model.add(Convolution2D(256,128, 3,3, init='glorot_uniform', activation = 'relu', border_mode='full'))
-    model.add(Convolution2D(256,256, 3,3, init='glorot_uniform', activation = 'relu'))
-    model.add(MaxPooling2D(poolsize=(2,2)))
+    model.add(Convolution2D(256,3,3, activation = 'relu'))
+    model.add(Convolution2D(256,3,3, activation = 'relu'))
+    model.add(MaxPooling2D(pool_size=(2,2)))
+
+    model.add(Convolution2D(512,3,3, activation = 'relu'))
+    model.add(Convolution2D(512,3,3, activation = 'relu'))
+    model.add(MaxPooling2D(pool_size=(2,2)))
 
     # convert convolutional filters to flat so they can be feed to fully connected layers
     model.add(Flatten())
 
-    model.add(Dense(65536,2048, init='glorot_uniform', W_regularizer = l2(0.00001)))
-    model.add(PReLU(2048))
+    model.add(Dense(2048, activation='relu'))
     #model.add(LeakyReLU(alpha=0.3))
     model.add(Dropout(0.5))
 
-    model.add(Dense(2048,2048, init='glorot_uniform', W_regularizer = l2(0.00001)))
-    model.add(PReLU(2048))
+    model.add(Dense(2048, activation='relu'))
     #model.add(LeakyReLU(alpha=0.3))
     model.add(Dropout(0.5))
 
-    model.add(Dense(2048,62, init='glorot_uniform'))
+    model.add(Dense(62))
     model.add(Activation('softmax'))
 
     # setting sgd optimizer parameters
@@ -187,8 +192,8 @@ def build_model():
 def main():
 
     # switch the commented lines here to alternate between CV testing and making kaggle submission
-    x_train, x_test, y_train, y_test = load_data_cv('data/train_32.npy')
-    #x_train, y_train, x_test = load_data_test('data/train_32.npy', 'data/test_32.npy')
+    #x_train, x_test, y_train, y_test = load_data_cv('data/train_32.npy')
+    x_train, y_train, x_test = load_data_test('data/train_32.npy', 'data/test_32.npy')
 
     model = build_model()
 
@@ -197,37 +202,51 @@ def main():
     train_loss = []
     valid_loss = []
     valid_acc = []
-    for i in range(300):
-        loss = batch_iterator(x_train, y_train, 128, model)
-        train_loss.append(loss)
-        valid_avg = model.evaluate(x_test, y_test, show_accuracy = True, verbose = 0)
-        valid_loss.append(valid_avg[0])
-        valid_acc.append(valid_avg[1])
-        print 'epoch:', i, 'train loss:', np.round(loss, decimals = 4), 'valid loss:', np.round(valid_avg[0], decimals = 4), 'valid acc:', np.round(valid_avg[1], decimals = 4)
+    try:
+        for i in range(300):
+            if i == 250:
+                model.optimizer.lr.set_value(0.003)
+            if i == 275:
+                model.optimizer.lr.set_value(0.0003)
+            start = time.time()
+            loss = batch_iterator(x_train, y_train, BATCHSIZE, model)
+            train_loss.append(loss)
+            #valid_avg = model.evaluate(x_test, y_test, show_accuracy = True, verbose = 0)
+            #valid_loss.append(valid_avg[0])
+            #valid_acc.append(valid_avg[1])
+            end = time.time() - start
+            print 'iter:', i, '| Tloss:', np.round(loss, decimals = 3)#, '| Vloss:', np.round(valid_avg[0], decimals = 3), '| Vacc:', np.round(valid_avg[1], decimals = 3), '| time:', np.round(end, decimals = 1)
+    except KeyboardInterrupt:
+        pass
 
-    train_loss = np.array(train_loss)
-    valid_loss = np.array(valid_loss)
-    valid_acc = np.array(valid_acc)
-    sns.set_style("whitegrid")
-    pyplot.plot(train_loss, linewidth = 3, label = 'train loss')
-    pyplot.plot(valid_loss, linewidth = 3, label = 'valid loss')
-    pyplot.legend(loc = 2)
-    pyplot.ylim([0,4.5])
-    pyplot.twinx()
-    pyplot.plot(valid_acc, linewidth = 3, label = 'valid accuracy', color = 'r')
-    pyplot.grid()
-    pyplot.ylim([0,1])
-    pyplot.legend(loc = 1)
-    pyplot.show()
+    #train_loss = np.array(train_loss)
+    #valid_loss = np.array(valid_loss)
+    #valid_acc = np.array(valid_acc)
+    #sns.set_style("whitegrid")
+    #pyplot.plot(train_loss, linewidth = 3, label = 'train loss')
+    #pyplot.plot(valid_loss, linewidth = 3, label = 'valid loss')
+    #pyplot.legend(loc = 2)
+    #pyplot.ylim([0,4.5])
+    #pyplot.twinx()
+    #pyplot.plot(valid_acc, linewidth = 3, label = 'valid accuracy', color = 'r')
+    #pyplot.grid()
+    #pyplot.ylim([0,1])
+    #pyplot.legend(loc = 1)
+    #pyplot.savefig('data/training_plot.png')
+    #pyplot.show()
 
 
-    #print("Generating predections")
-    #preds = model.predict_classes(x_test, verbose=0)
-    #preds = label_enc.inverse_transform(preds).astype(str)
+    print("Generating predections")
+    preds = model.predict(x_test, verbose=0)
+    np.save('data/preds3.npy', preds)
+    preds_orig = np.load('data/preds1.npy')
+    preds_two = np.load('data/preds2.npy')
+    preds_avg = (preds + preds_orig + preds_two) / 3.0
+    preds = label_enc.inverse_transform(preds_avg, threshold=0.5).astype(str)
 
-    #submission = pd.read_csv('sampleSubmission.csv', dtype = str)
-    #submission['Class'] = preds
-    #submission.to_csv('keras_cnn.csv', index = False)
+    submission = pd.read_csv('data/sampleSubmission.csv', dtype = str)
+    submission['Class'] = preds
+    submission.to_csv('preds/chars_74k_avg_preds.csv', index = False)
 
 if __name__ == '__main__':
     main()
